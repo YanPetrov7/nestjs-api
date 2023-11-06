@@ -1,24 +1,26 @@
-version: '3.8'
+version: '3'
 services:
   dev-db:
     image: postgres:13
-    ports:
-      - 5432:5432
+    restart: always
     environment:
-      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
+      POSTGRES_USER: postgres
       POSTGRES_DB: nest
-    networks:
-      - network
-  test-db:
-    image: postgres:13
+    volumes:
+      - db-data:/var/lib/postgresql/data
     ports:
-      - 5435:5432
+      - "5432:5432"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nestjs_app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - dev-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: nest
-    networks:
-      - network
-networks:
-  network:
+      DATABASE_URL: ${DATABASE_URL}
+volumes:
+  db-data:
