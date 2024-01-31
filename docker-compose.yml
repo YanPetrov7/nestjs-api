@@ -39,6 +39,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       TEST_DATABASE_URL: ${TEST_DATABASE_URL}
       LOCAL_DATABASE_URL: ${LOCAL_DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
 
 volumes:
   dev-db-data:

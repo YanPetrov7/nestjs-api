@@ -1,0 +1,42 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_DB_TEST: ${{ secrets.POSTGRES_DB_TEST }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      TEST_DATABASE_HOST: ${{ secrets.TEST_DATABASE_HOST }}
+      TEST_DATABASE_PORT: ${{ secrets.TEST_DATABASE_PORT }}
+      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      LOCAL_DATABASE_URL: ${{ secrets.LOCAL_DATABASE_URL }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Stop and remove all Docker containers
+      run: |
+        if [ "$(docker ps -q -a)" != "" ]; then
+            docker stop $(docker ps -q -a)
+            docker rm $(docker ps -q -a)
+        fi
+
+    - name: Build and run tests
+      run: |
+        npm install
+        sleep 10
+        docker-compose -p nestjs-app run app /bin/sh -c 'export DATABASE_URL=$LOCAL_DATABASE_URL && npx prisma migrate deploy && npx jest --no-cahe --config ./test/jest-e2e.json'
